@@ -1,0 +1,49 @@
+# dependencies (bun install)
+node_modules
+
+# output
+dist
+out
+*.tgz
+
+# code coverage
+coverage
+*.lcov
+
+# logs
+logs
+*.log
+
+# dotenv environment variable files
+.env
+.env.*.local
+.env.local
+.env.production.local
+.env.development.local
+.env.test.local
+
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# IntelliJ based IDEs
+.idea
+
+# Finder (macOS) folder config
+.DS_Store
+
+# turbo
+.turbo
+
+# python
+.venv
+__pycache__
+*.py[cod]
+.uv
+
+# types build artifacts (if any)
+*.tsbuildinfo
+
+AGENTS.md
+PROGRESS.md
