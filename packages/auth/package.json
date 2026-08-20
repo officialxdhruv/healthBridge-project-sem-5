@@ -1,0 +1,26 @@
+{
+  "name": "@healthbridge/auth",
+  "private": true,
+  "type": "module",
+  "module": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@healthbridge/db": "workspace:*",
+    "@healthbridge/types": "workspace:*",
+    "bcrypt-ts": "^8.0.1"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint .",
+    "format": "biome format --write ."
+  },
+  "devDependencies": {
+    "@healthbridge/typescript-config": "workspace:*",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "~6.0.2"
+  }
+}
