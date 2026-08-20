@@ -1,0 +1,12 @@
+{
+  "name": "@healthbridge/typescript-config",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base.json": "./base.json"
+  },
+  "scripts": {
+    "lint": "biome lint .",
+    "format": "biome format --write ."
+  }
+}
