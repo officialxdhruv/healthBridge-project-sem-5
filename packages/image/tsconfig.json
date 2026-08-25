@@ -1,0 +1,9 @@
+{
+  "extends": "@healthbridge/typescript-config/base.json",
+  "compilerOptions": {
+    "moduleDetection": "force",
+    "noEmit": true,
+    "types": ["bun"]
+  },
+  "include": ["src"]
+}
