@@ -24,7 +24,8 @@
     "googleapis": "^174.0.1",
     "multer": "^2.2.0",
     "razorpay": "^2.9.8",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "file-type": "^22.0.2"
   },
   "devDependencies": {
     "@healthbridge/typescript-config": "workspace:*",
