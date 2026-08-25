@@ -6,6 +6,7 @@ import cors from "cors";
 import express from "express";
 import { env } from "@/env";
 import errorHandler from "@/middlewares/error-handler";
+import { createV1Router } from "@/routes/v1/routes";
 
 export function createServer(input: {
   users: UserRepo;
@@ -40,6 +41,18 @@ export function createServer(input: {
         res.setHeader("X-Content-Type-Options", "nosniff");
         res.setHeader("Content-Security-Policy", "default-src 'none'");
       },
+    }),
+  );
+
+  app.use(
+    "/api/v1",
+    createV1Router({
+      users: input.users,
+      doctors: input.doctors,
+      appointments: input.appointments,
+      hasher: input.hasher,
+      auth: input.auth,
+      image: input.image,
     }),
   );
 
