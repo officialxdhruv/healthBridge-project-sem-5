@@ -1,5 +1,10 @@
 import type { AuthProvider, PasswordHasher } from "@healthbridge/auth";
-import type { AppointmentRepo, DoctorRepo, UserRepo } from "@healthbridge/db";
+import type {
+  AppointmentRepo,
+  DoctorRepo,
+  UpdateUserInput,
+  UserRepo,
+} from "@healthbridge/db";
 import type { ImageStore } from "@healthbridge/image";
 import type { Request, Response } from "express";
 import {
@@ -12,7 +17,11 @@ import {
   UnauthorizedError,
   ValidationError,
 } from "@/errors";
-import { loginSchema, registerSchema } from "./user.schemas";
+import {
+  loginSchema,
+  registerSchema,
+  updateProfileSchema,
+} from "./user.schemas";
 
 export function createUserController(input: {
   users: UserRepo;
@@ -22,7 +31,14 @@ export function createUserController(input: {
   appointments: AppointmentRepo;
   image: ImageStore;
 }) {
-  const { users, hasher, auth } = input;
+  const {
+    users,
+    hasher,
+    auth,
+    doctors,
+    appointments,
+    image: imageStore,
+  } = input;
 
   async function register(req: Request, res: Response) {
     const parsed = registerSchema.safeParse(req.body);
@@ -110,10 +126,67 @@ export function createUserController(input: {
     res.json({ success: true, user });
   }
 
+  async function getProfile(req: Request, res: Response) {
+    await me(req, res);
+  }
+
+  async function updateProfile(req: Request, res: Response) {
+    if (!req.user) {
+      throw new UnauthorizedError("Not authenticated");
+    }
+
+    const parsed = updateProfileSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ValidationError(
+        parsed.error.issues[0]?.message ?? "Validation failed",
+      );
+    }
+
+    const { name, phone, address: addressJson, gender, dob } = parsed.data;
+
+    let address: { line1: string; line2?: string } | undefined;
+    if (addressJson) {
+      try {
+        const value: unknown = JSON.parse(addressJson);
+        if (typeof value === "object" && value !== null) {
+          address = value as { line1: string; line2?: string };
+        }
+      } catch {
+        throw new ValidationError("Invalid address format");
+      }
+    }
+
+    const payload: UpdateUserInput = {
+      name,
+      ...(address ? { address } : {}),
+      ...(gender ? { gender } : {}),
+      ...(phone ? { phone } : {}),
+      ...(dob ? { dob } : {}),
+    };
+
+    if (req.file) {
+      payload.image = await imageStore.upload(req.file.path);
+    }
+
+    const user = await users.update(req.user.id, payload);
+    if (!user) throw new EntityNotFoundError("User not found");
+
+    res.json({ success: true, user });
+  }
+
+  async function listAppointments(req: Request, res: Response) {
+    if (!req.user) throw new UnauthorizedError("Not authenticated");
+    const list = await appointments.findByUserId(req.user.id);
+    res.json({ success: true, appointments: list });
+  }
+
   return {
     register,
     login,
     logout,
     me,
+    getProfile,
+    updateProfile,
+    listAppointments,
   };
 }

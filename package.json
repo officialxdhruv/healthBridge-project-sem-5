@@ -24,5 +24,8 @@
   },
   "peerDependencies": {
     "typescript": "~6.0.2"
+  },
+  "dependencies": {
+    "file-type": "^22.0.2"
   }
 }
