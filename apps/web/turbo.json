@@ -1,0 +1,14 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "typecheck": {
+      "outputs": ["node_modules/.tmp/tsconfig.*.tsbuildinfo"]
+    },
+    "build": {
+      "env": ["VITE_BACKEND_URL", "VITE_RAZORPAY_KEY_ID"],
+      "inputs": ["$TURBO_DEFAULT$", ".env", ".env.*"],
+      "outputs": ["dist/**", "node_modules/.tmp/tsconfig.*.tsbuildinfo"]
+    }
+  }
+}
