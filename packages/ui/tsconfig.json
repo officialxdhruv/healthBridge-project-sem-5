@@ -1,0 +1,13 @@
+{
+  "extends": "@healthbridge/typescript-config/base.json",
+  "compilerOptions": {
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"]
+}
