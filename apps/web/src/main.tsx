@@ -26,7 +26,7 @@ createRoot(root).render(
     <ThemeProvider defaultTheme="system">
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
-        <Toaster richColors position="top-center" />
+        <Toaster richColors position="bottom-right" />
       </QueryClientProvider>
     </ThemeProvider>
   </StrictMode>,

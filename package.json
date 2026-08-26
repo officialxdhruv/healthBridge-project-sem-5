@@ -15,7 +15,9 @@
     "lint": "turbo run lint",
     "format": "biome format --write .",
     "check": "biome check --write .",
-    "lint:fix": "biome lint --write ."
+    "lint:fix": "biome lint --write .",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.7",
