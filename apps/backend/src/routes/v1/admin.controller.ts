@@ -57,8 +57,17 @@ export function createAdminController(input: {
     res.json({ success: true, message: "Logged out" });
   }
 
+  async function getProfile(req: Request, res: Response) {
+    if (!req.user) throw new UnauthorizedError("Not authenticated");
+    res.json({
+      success: true,
+      admin: { id: req.user.id, role: req.user.role },
+    });
+  }
+
   return {
     login,
     logout,
+    getProfile,
   };
 }
