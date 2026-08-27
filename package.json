@@ -13,11 +13,14 @@
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
-    "format": "biome format --write .",
+    "format": "biome check --write .",
     "check": "biome check --write .",
     "lint:fix": "biome lint --write .",
     "docker:up": "docker compose up --build",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "docker:db": "docker compose up -d mongo",
+    "docker:server": "docker compose up -d backend",
+    "docker:web": "docker compose up -d web"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.7",
