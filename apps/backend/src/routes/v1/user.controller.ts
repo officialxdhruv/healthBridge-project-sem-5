@@ -7,18 +7,26 @@ import type {
 } from "@healthbridge/db";
 import type { ImageStore } from "@healthbridge/image";
 import type { Request, Response } from "express";
+import { validatePaymentVerification } from "razorpay/dist/utils/razorpay-utils";
 import {
   COOKIE_NAMES,
   clearSessionCookie,
   setSessionCookie,
 } from "@/auth/cookies";
+import { createMeetEvent, tryDeleteMeetEvent } from "@/config/google";
+import { razorpay } from "@/config/razorpay";
+import { env } from "@/env";
 import {
   EntityNotFoundError,
+  ForbiddenError,
   UnauthorizedError,
   ValidationError,
 } from "@/errors";
 import {
+  appointmentIdSchema,
+  bookAppointmentSchema,
   loginSchema,
+  razorpayVerificationSchema,
   registerSchema,
   updateProfileSchema,
 } from "./user.schemas";
@@ -180,6 +188,203 @@ export function createUserController(input: {
     res.json({ success: true, appointments: list });
   }
 
+  async function bookAppointment(req: Request, res: Response) {
+    if (!req.user) throw new UnauthorizedError("Not authenticated");
+
+    const parsed = bookAppointmentSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ValidationError(
+        parsed.error.issues[0]?.message ?? "Validation failed",
+      );
+    }
+    const { docId, slotDate, slotTime } = parsed.data;
+
+    const [doctor, user] = await Promise.all([
+      doctors.findById(docId),
+      users.findById(req.user.id),
+    ]);
+    if (!doctor) throw new EntityNotFoundError("Doctor not found");
+    if (!user) throw new EntityNotFoundError("User not found");
+    if (!doctor.available) throw new ValidationError("Doctor not available");
+
+    // Atomic slot reservation — rejects double-booking races.
+    const booked = await doctors.bookSlot(docId, slotDate, slotTime);
+    if (!booked) throw new ValidationError("Slot not available");
+
+    let appointment: Awaited<ReturnType<typeof appointments.create>>;
+    try {
+      appointment = await appointments.create({
+        userId: req.user.id,
+        docId,
+        slotDate,
+        slotTime,
+        userData: {
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          image: user.image,
+          dob: user.dob,
+        },
+        docData: {
+          name: doctor.name,
+          email: doctor.email,
+          speciality: doctor.speciality,
+          image: doctor.image,
+        },
+        amount: doctor.fees,
+      });
+    } catch (error) {
+      // Compensate: release the slot so a failed booking doesn't leak it.
+      try {
+        await doctors.freeSlot(docId, slotDate, slotTime);
+      } catch (freeError) {
+        console.error("Failed to release reserved slot:", freeError);
+      }
+      throw error;
+    }
+
+    // Best-effort: create the Meet event on the doctor's calendar. A failure
+    // never blocks the booking — the appointment stands without a link.
+    let saved = appointment;
+    try {
+      const googleAuth = await doctors.getGoogleAuth(docId);
+      if (googleAuth?.googleTokens?.access_token) {
+        const { meetLink, googleEventId } = await createMeetEvent({
+          tokens: googleAuth.googleTokens,
+          appointmentId: appointment.id,
+          doctorName: doctor.name,
+          slotDate,
+          slotTime,
+        });
+        saved =
+          (await appointments.update(appointment.id, {
+            meetLink,
+            googleEventId,
+          })) ?? saved;
+      }
+    } catch (error) {
+      console.error("Google Meet creation failed:", error);
+    }
+
+    res.status(201).json({ success: true, appointment: saved });
+  }
+
+  async function cancelAppointment(req: Request, res: Response) {
+    if (!req.user) throw new UnauthorizedError("Not authenticated");
+
+    const parsed = appointmentIdSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ValidationError(
+        parsed.error.issues[0]?.message ?? "Validation failed",
+      );
+    }
+
+    const appointment = await appointments.findById(parsed.data.appointmentId);
+    if (!appointment) throw new EntityNotFoundError("Appointment not found");
+    if (appointment.userId !== req.user.id) {
+      throw new ForbiddenError("Not authorized");
+    }
+    if (appointment.cancelled) {
+      throw new ValidationError("Appointment already cancelled");
+    }
+
+    // Best-effort: delete the doctor's calendar event (the doctor owns the meeting).
+    const googleAuth = await doctors.getGoogleAuth(appointment.docId);
+    await tryDeleteMeetEvent({
+      tokens: googleAuth?.googleTokens,
+      googleEventId: appointment.googleEventId,
+    });
+
+    const updated = await appointments.update(appointment.id, {
+      cancelled: true,
+    });
+    if (!updated) throw new EntityNotFoundError("Appointment not found");
+    await doctors.freeSlot(
+      appointment.docId,
+      appointment.slotDate,
+      appointment.slotTime,
+    );
+
+    res.json({ success: true, appointment: updated });
+  }
+
+  async function createRazorpayOrder(req: Request, res: Response) {
+    if (!req.user) throw new UnauthorizedError("Not authenticated");
+    if (!razorpay) throw new ValidationError("Payments not configured");
+
+    const parsed = appointmentIdSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ValidationError(
+        parsed.error.issues[0]?.message ?? "Validation failed",
+      );
+    }
+
+    const appointment = await appointments.findById(parsed.data.appointmentId);
+    if (!appointment) throw new EntityNotFoundError("Appointment not found");
+    if (appointment.userId !== req.user.id) {
+      throw new ForbiddenError("Not authorized");
+    }
+    if (appointment.cancelled) {
+      throw new ValidationError("Appointment is cancelled");
+    }
+    if (appointment.payment) {
+      throw new ValidationError("Appointment already paid");
+    }
+
+    const order = await razorpay.orders.create({
+      amount: Math.round(appointment.amount * 100),
+      currency: "INR",
+      receipt: appointment.id,
+    });
+
+    res.json({ success: true, order });
+  }
+
+  async function verifyRazorpayPayment(req: Request, res: Response) {
+    if (!req.user) throw new UnauthorizedError("Not authenticated");
+    if (!razorpay) throw new ValidationError("Payments not configured");
+
+    const parsed = razorpayVerificationSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ValidationError(
+        parsed.error.issues[0]?.message ?? "Validation failed",
+      );
+    }
+
+    if (!env.RAZORPAY_KEY_SECRET) {
+      throw new ValidationError("Payments not configured");
+    }
+
+    const signatureValid = validatePaymentVerification(
+      {
+        order_id: parsed.data.razorpay_order_id,
+        payment_id: parsed.data.razorpay_payment_id,
+      },
+      parsed.data.razorpay_signature,
+      env.RAZORPAY_KEY_SECRET,
+    );
+    if (!signatureValid) throw new ValidationError("Invalid payment signature");
+
+    const orderInfo = await razorpay.orders.fetch(
+      parsed.data.razorpay_order_id,
+    );
+    if (orderInfo.status !== "paid") {
+      throw new ValidationError("Payment failed");
+    }
+
+    const appointment = await appointments.findById(orderInfo.receipt ?? "");
+    if (!appointment) throw new EntityNotFoundError("Appointment not found");
+    if (appointment.userId !== req.user.id) {
+      throw new ForbiddenError("Not authorized");
+    }
+
+    const updated = await appointments.update(appointment.id, {
+      payment: true,
+    });
+    if (!updated) throw new EntityNotFoundError("Appointment not found");
+    res.json({ success: true, appointment: updated });
+  }
+
   return {
     register,
     login,
@@ -188,5 +393,9 @@ export function createUserController(input: {
     getProfile,
     updateProfile,
     listAppointments,
+    bookAppointment,
+    cancelAppointment,
+    createRazorpayOrder,
+    verifyRazorpayPayment,
   };
 }

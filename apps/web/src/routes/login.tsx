@@ -56,7 +56,7 @@ function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome back</CardTitle>
+          <CardTitle>Welcome back</CardTitle>
           <CardDescription>
             Sign in to your HealthBridge account
           </CardDescription>

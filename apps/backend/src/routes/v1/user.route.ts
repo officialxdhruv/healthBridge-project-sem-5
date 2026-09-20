@@ -23,6 +23,10 @@ export function createUserRouter(input: {
     getProfile,
     updateProfile,
     listAppointments,
+    bookAppointment,
+    cancelAppointment,
+    createRazorpayOrder,
+    verifyRazorpayPayment,
   } = createUserController(input);
 
   router.post("/register", register);
@@ -34,6 +38,10 @@ export function createUserRouter(input: {
   router.get("/get-profile", auth, getProfile);
   router.post("/update-profile", auth, uploadImage, updateProfile);
   router.get("/appointments", auth, listAppointments);
+  router.post("/book-appointment", auth, bookAppointment);
+  router.post("/cancel-appointment", auth, cancelAppointment);
+  router.post("/create-razorpay-order", auth, createRazorpayOrder);
+  router.post("/verify-razorpay-payment", auth, verifyRazorpayPayment);
 
   return router;
 }

@@ -56,7 +56,7 @@ function AdminLoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Admin Portal</CardTitle>
+          <CardTitle>Admin Portal</CardTitle>
           <CardDescription>Sign in to manage HealthBridge</CardDescription>
         </CardHeader>
         <CardContent>

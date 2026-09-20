@@ -65,7 +65,7 @@ function RegisterPage() {
     <main className="flex min-h-screen items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Create account</CardTitle>
+          <CardTitle>Create account</CardTitle>
           <CardDescription>Join HealthBridge in seconds</CardDescription>
         </CardHeader>
         <CardContent>

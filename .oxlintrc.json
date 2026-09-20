@@ -1,0 +1,17 @@
+{
+  "jsPlugins": ["@shadcn/lint"],
+  "settings": {
+    "shadcn": {
+      "ui": "@healthbridge/ui/components"
+    }
+  },
+  "rules": {
+    "shadcn/no-restyle": ["error", { "allow": ["layout"] }]
+  },
+  "overrides": [
+    {
+      "files": ["packages/ui/src/components/**"],
+      "rules": { "shadcn/no-restyle": "off" }
+    }
+  ]
+}

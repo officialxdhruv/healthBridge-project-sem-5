@@ -18,3 +18,19 @@ export const updateProfileSchema = z.object({
   gender: z.enum(["Male", "Female", "Other", "Not Selected"]).optional(),
   dob: z.string().trim().optional(),
 });
+
+export const bookAppointmentSchema = z.object({
+  docId: z.string().min(1),
+  slotDate: z.string().min(1),
+  slotTime: z.string().min(1),
+});
+
+export const appointmentIdSchema = z.object({
+  appointmentId: z.string().min(1),
+});
+
+export const razorpayVerificationSchema = z.object({
+  razorpay_order_id: z.string().min(1),
+  razorpay_payment_id: z.string().min(1),
+  razorpay_signature: z.string().min(1),
+});

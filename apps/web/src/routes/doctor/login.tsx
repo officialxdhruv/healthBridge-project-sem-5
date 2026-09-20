@@ -59,7 +59,7 @@ function DoctorLoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Doctor Portal</CardTitle>
+          <CardTitle>Doctor Portal</CardTitle>
           <CardDescription>Sign in to manage appointments</CardDescription>
         </CardHeader>
         <CardContent>
