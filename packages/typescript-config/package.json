@@ -6,7 +6,9 @@
     "./base.json": "./base.json"
   },
   "scripts": {
-    "lint": "biome lint .",
-    "format": "biome format --write ."
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
   }
 }

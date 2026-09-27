@@ -6,13 +6,15 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "dependencies": {
-    "@imagekit/nodejs": "^7.10.0"
-  },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "lint": "biome lint .",
-    "format": "biome format --write ."
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
+  },
+  "dependencies": {
+    "@imagekit/nodejs": "^7.10.0"
   },
   "devDependencies": {
     "@healthbridge/typescript-config": "workspace:*",

@@ -6,15 +6,17 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
+  },
   "dependencies": {
     "@healthbridge/db": "workspace:*",
     "@healthbridge/types": "workspace:*",
     "bcrypt-ts": "^8.0.1"
-  },
-  "scripts": {
-    "typecheck": "tsc --noEmit",
-    "lint": "biome lint .",
-    "format": "biome format --write ."
   },
   "devDependencies": {
     "@healthbridge/typescript-config": "workspace:*",
