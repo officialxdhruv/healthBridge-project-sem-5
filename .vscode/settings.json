@@ -9,25 +9,28 @@
     "**/routeTree.gen.ts": true
   },
   "editor.formatOnSave": true,
-  "editor.formatOnPaste": true,
-  "editor.defaultFormatter": "biomejs.biome",
+  "editor.formatOnSaveMode": "file", // format the whole file, not just changed lines
+  "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.codeActionsOnSave": {
-    "source.fixAll.biome": "explicit"
+    "source.fixAll.oxc": "explicit"
   },
-  "biome.lsp.bin": "./node_modules/@biomejs/biome/bin/biome",
+  "oxc.lint.run": "onType",
   "[javascript]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[typescript]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[json]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
   },
   "[css]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   }
 }
