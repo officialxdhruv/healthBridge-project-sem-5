@@ -23,18 +23,13 @@ export function composeHasher() {
 export function composeImageStore() {
   switch (env.IMAGE_PROVIDER) {
     case "imagekit":
-      if (!env.IMAGEKIT_PRIVATE_KEY) {
-        throw new Error(
-          "IMAGE_PROVIDER=imagekit but IMAGEKIT_PRIVATE_KEY is not set",
-        );
-      }
       return createImageStore({
         provider: "imagekit",
         privateKey: env.IMAGEKIT_PRIVATE_KEY,
         folder: "healthbridge",
       });
     default:
-      return createImageStore({ provider: "local" });
+      throw new Error(`Unknown IMAGE_PROVIDER: ${env.IMAGE_PROVIDER}`);
   }
 }
 

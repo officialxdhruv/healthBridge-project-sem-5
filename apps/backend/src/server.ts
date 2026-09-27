@@ -35,16 +35,6 @@ export function createServer(input: {
   });
 
   app.use(
-    "/uploads",
-    express.static("uploads", {
-      setHeaders: (res) => {
-        res.setHeader("X-Content-Type-Options", "nosniff");
-        res.setHeader("Content-Security-Policy", "default-src 'none'");
-      },
-    }),
-  );
-
-  app.use(
     "/api/v1",
     createV1Router({
       users: input.users,
