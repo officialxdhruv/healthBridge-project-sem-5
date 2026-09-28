@@ -31,10 +31,7 @@ import { profileQueryOptions } from "../../../lib/user.ts";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export const Route = createFileRoute("/(dashboard)/(user)/profile")({
-  // beforeLoad: requireUser,
   component: ProfilePage,
-  // loader: ({ context }) =>
-  //   context.queryClient.ensureQueryData(profileQueryOptions()),
 });
 
 type ProfileForm = {
@@ -86,7 +83,7 @@ function ProfilePage() {
       data.append("gender", form.gender);
       data.append("dob", form.dob);
       if (image) data.append("image", image);
-      await api.postForm("/user/update-profile", data);
+      await api.postForm("/api/v1/user/update-profile", data);
     },
     onSuccess: async () => {
       toast.success("Profile updated successfully");
