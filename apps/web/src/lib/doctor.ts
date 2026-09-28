@@ -1,18 +1,53 @@
-import type { Doctor } from "@healthbridge/types";
+import type { Appointment, Doctor } from "@healthbridge/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiError, apiGet, apiPost } from "./api";
 
-type DoctorProfileResponse = { success: true; doctor: Doctor };
+export type DoctorProfileResponse = { success: true; doctor: Doctor };
 
 const DOCTOR_QUERY_KEY = ["doctor"] as const;
 
-export function useDoctorProfileQuery() {
-  return useQuery({
+export function doctorProfileQueryOptions() {
+  return {
     queryKey: DOCTOR_QUERY_KEY,
     queryFn: () => apiGet<DoctorProfileResponse>("/api/v1/doctor/profile"),
     retry: false,
     throwOnError: false,
-  });
+  };
+}
+
+export type DoctorDashData = {
+  earnings: number;
+  appointments: number;
+  patients: number;
+  latestAppointments: Appointment[];
+};
+
+export function doctorDashboardQueryOptions() {
+  return {
+    queryKey: ["doctor", "dashboard"] as const,
+    queryFn: async () => {
+      const res = await apiGet<{ dashData: DoctorDashData }>(
+        "/api/v1/doctor/dashboard",
+      );
+      return res.dashData;
+    },
+  };
+}
+
+export function doctorAppointmentsQueryOptions() {
+  return {
+    queryKey: ["doctor", "appointments"] as const,
+    queryFn: async () => {
+      const res = await apiGet<{ appointments: Appointment[] }>(
+        "/api/v1/doctor/appointments",
+      );
+      return [...res.appointments].reverse();
+    },
+  };
+}
+
+export function useDoctorProfileQuery() {
+  return useQuery(doctorProfileQueryOptions());
 }
 
 export function useDoctorLoginMutation() {

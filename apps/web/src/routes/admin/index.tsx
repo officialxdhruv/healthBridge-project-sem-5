@@ -1,62 +1,124 @@
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@healthbridge/ui/components/ui/avatar";
 import { Button } from "@healthbridge/ui/components/ui/button";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { useAdminLogoutMutation, useAdminProfileQuery } from "@/lib/admin-auth";
-import { ApiError } from "@/lib/api";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@healthbridge/ui/components/ui/card";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { CalendarDays, Stethoscope, Users } from "lucide-react";
+import { toast } from "sonner";
+import { adminDashboardQueryOptions } from "@/lib/admin";
+import { api } from "@/lib/api";
+import { formatSlotDate } from "@/lib/dates";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
+  head: () => ({ meta: [{ title: "Admin Dashboard | HealthBridge" }] }),
 });
 
 function AdminDashboard() {
-  const navigate = useNavigate();
-  const profile = useAdminProfileQuery();
-  const logout = useAdminLogoutMutation();
+  const queryClient = useQueryClient();
+  const { data: dashData, isLoading } = useQuery(adminDashboardQueryOptions());
 
-  useEffect(() => {
-    if (profile.error) {
-      const status =
-        profile.error instanceof ApiError ? profile.error.status : undefined;
-      if (status === 401) {
-        navigate({ to: "/admin/login" });
-      }
-    }
-  }, [profile.error, navigate]);
+  const { mutate: cancelAppointment } = useMutation({
+    mutationFn: async (appointmentId: string) => {
+      await api.post("/api/v1/admin/cancel-appointment", { appointmentId });
+    },
+    onSuccess: () => {
+      toast.success("Appointment cancelled");
+      queryClient.invalidateQueries({ queryKey: ["admin", "dashboard"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
 
-  if (profile.isPending) {
-    return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Loading…</p>
-      </main>
-    );
+  if (isLoading) {
+    return <p className="m-5 text-sm text-muted-foreground">Loading…</p>;
   }
+  if (!dashData) return null;
 
-  if (profile.isError) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-muted p-4 text-center">
-        <h1 className="text-2xl font-semibold">Admin Portal</h1>
-        <p className="text-sm text-muted-foreground">Sign in required</p>
-        <Button onClick={() => navigate({ to: "/admin/login" })}>
-          Go to login
-        </Button>
-      </main>
-    );
-  }
+  const stats = [
+    { label: "Doctors", value: dashData.doctors, icon: Stethoscope },
+    { label: "Appointments", value: dashData.appointments, icon: CalendarDays },
+    { label: "Patients", value: dashData.patients, icon: Users },
+  ];
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-muted p-4 text-center">
-      <h1 className="text-2xl font-semibold">Admin Portal</h1>
-      <p className="text-sm text-muted-foreground">Welcome, admin</p>
-      <Button
-        variant="outline"
-        onClick={async () => {
-          await logout.mutateAsync();
-          navigate({ to: "/admin/login" });
-        }}
-        disabled={logout.isPending}
-      >
-        {logout.isPending ? "Signing out…" : "Sign out"}
-      </Button>
-    </main>
+    <div className="m-5 space-y-6">
+      <div className="grid grid-cols-3 gap-4">
+        {stats.map(({ label, value, icon: Icon }) => (
+          <Card key={label}>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <Icon className="size-10 text-muted-foreground" />
+                <div>
+                  <p className="text-2xl font-semibold">{value}</p>
+                  <p className="text-muted-foreground">{label}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Latest Bookings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {dashData.latestAppointments?.length === 0 && (
+              <p className="text-sm text-muted-foreground">No bookings yet.</p>
+            )}
+            {dashData.latestAppointments.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-3 border-b py-2 last:border-0"
+              >
+                <Avatar>
+                  <AvatarImage
+                    src={item.userData.image || undefined}
+                    alt={item.userData.name}
+                    className="object-cover"
+                  />
+                  <AvatarFallback>
+                    {item.userData.name.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <p className="font-medium">{item.userData.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Booking on {formatSlotDate(item.slotDate)}
+                  </p>
+                </div>
+                {item.cancelled ? (
+                  <span className="text-xs font-medium text-destructive">
+                    Cancelled
+                  </span>
+                ) : item.isCompleted ? (
+                  <span className="text-xs font-medium text-green-500">
+                    Completed
+                  </span>
+                ) : (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => cancelAppointment(item.id)}
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -12,9 +12,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { getAuthErrorMessage, useRegisterMutation } from "@/lib/auth";
+import { getAuthErrorMessage, useRegisterMutation } from "@/lib/user";
 
-export const Route = createFileRoute("/register")({
+export const Route = createFileRoute("/(auth)/register")({
   component: RegisterPage,
 });
 
@@ -62,14 +62,14 @@ function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-muted p-4">
-      <Card className="w-full max-w-sm">
+    <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-background px-4 py-6">
+      <Card className="w-full max-w-sm" size="sm">
         <CardHeader className="text-center">
           <CardTitle>Create account</CardTitle>
           <CardDescription>Join HealthBridge in seconds</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onSubmit} className="flex flex-col gap-4">
+          <form onSubmit={onSubmit} className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="name">Name</Label>
               <Input
@@ -124,7 +124,7 @@ function RegisterPage() {
 
             <Button
               type="submit"
-              className="mt-2 w-full"
+              className="mt-1 w-full"
               disabled={register.isPending}
             >
               {register.isPending ? "Creating account…" : "Create account"}

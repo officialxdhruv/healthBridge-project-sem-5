@@ -12,9 +12,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { getAuthErrorMessage, useLoginMutation } from "@/lib/auth";
+import { getAuthErrorMessage, useLoginMutation } from "@/lib/user";
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/(auth)/login")({
   component: LoginPage,
 });
 
@@ -53,8 +53,8 @@ function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-muted p-4">
-      <Card className="w-full max-w-sm">
+    <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-background px-4 py-6">
+      <Card className="w-full max-w-sm" size="sm">
         <CardHeader className="text-center">
           <CardTitle>Welcome back</CardTitle>
           <CardDescription>
@@ -62,7 +62,7 @@ function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onSubmit} className="flex flex-col gap-4">
+          <form onSubmit={onSubmit} className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -99,7 +99,7 @@ function LoginPage() {
 
             <Button
               type="submit"
-              className="mt-2 w-full"
+              className="mt-1 w-full"
               disabled={login.isPending}
             >
               {login.isPending ? "Signing in…" : "Sign in"}

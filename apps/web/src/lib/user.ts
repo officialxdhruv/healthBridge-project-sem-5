@@ -1,4 +1,4 @@
-import type { User } from "@healthbridge/types";
+import type { Appointment, Doctor, User } from "@healthbridge/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiError, apiGet, apiPost } from "./api";
 
@@ -7,14 +7,52 @@ type AuthResponse = { success: true; user?: User };
 
 const ME_QUERY_KEY = ["me"] as const;
 
-export function useMeQuery() {
-  return useQuery({
+export function meQueryOptions() {
+  return {
     queryKey: ME_QUERY_KEY,
     queryFn: () => apiGet<MeResponse>("/api/v1/user/me"),
     retry: false,
     // 401 means not logged in — don't treat as error for the UI
     throwOnError: false,
-  });
+  };
+}
+
+export function doctorsQueryOptions() {
+  return {
+    queryKey: ["doctors"] as const,
+    queryFn: async () => {
+      const res = await apiGet<{ success: true; doctors: Doctor[] }>(
+        "/api/v1/doctor/list",
+      );
+      return res.doctors;
+    },
+  };
+}
+
+export function profileQueryOptions() {
+  return {
+    queryKey: ["profile"] as const,
+    queryFn: async () => {
+      const res = await apiGet<{ user: User }>("/api/v1/user/get-profile");
+      return res.user;
+    },
+  };
+}
+
+export function myAppointmentsQueryOptions() {
+  return {
+    queryKey: ["my-appointments"] as const,
+    queryFn: async () => {
+      const res = await apiGet<{ appointments: Appointment[] }>(
+        "/api/v1/user/appointments",
+      );
+      return [...res.appointments].reverse();
+    },
+  };
+}
+
+export function useMeQuery() {
+  return useQuery(meQueryOptions());
 }
 
 export function useLoginMutation() {
