@@ -6,14 +6,14 @@ import { DoctorCard } from "@/components/DoctorCard";
 import { useDoctors } from "@/hooks/useDoctors";
 import { SPECIALITIES } from "@/lib/specialities";
 
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
 export const Route = createFileRoute("/(dashboard)/doctors/")({
   component: DoctorsPage,
-  head: () => ({
-    meta: [{ title: "All Doctors | HealthBridge" }],
-  }),
 });
 
 function DoctorsPage() {
+  useDocumentTitle("All Doctors | HealthBridge");
   const { data: doctors, isLoading } = useDoctors();
 
   return (

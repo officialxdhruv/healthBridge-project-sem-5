@@ -16,9 +16,10 @@ import { assets } from "@/assets/assets_frontend/assets";
 import { api } from "@/lib/api";
 import { SPECIALITIES } from "@/lib/specialities";
 
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
 export const Route = createFileRoute("/admin/add-doctor")({
   component: AddDoctor,
-  head: () => ({ meta: [{ title: "Add Doctor | HealthBridge" }] }),
 });
 
 const experiences = Array.from(
@@ -40,6 +41,7 @@ const emptyForm = {
 };
 
 function AddDoctor() {
+  useDocumentTitle("Add Doctor | HealthBridge");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [docImg, setDocImg] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);

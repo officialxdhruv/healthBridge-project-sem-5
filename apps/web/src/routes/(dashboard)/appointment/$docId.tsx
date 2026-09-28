@@ -1,7 +1,7 @@
 import { Badge } from "@healthbridge/ui/components/ui/badge";
 import { Button } from "@healthbridge/ui/components/ui/button";
 import { cn } from "@healthbridge/ui/lib/utils";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -10,10 +10,11 @@ import { RelatedDoctors } from "@/components/RelatedDoctors";
 import { useDoctors } from "@/hooks/useDoctors";
 import { api } from "@/lib/api";
 
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
 export const Route = createFileRoute("/(dashboard)/appointment/$docId")({
   // beforeLoad: requireUser,
   component: Appointment,
-  head: () => ({ meta: [{ title: "Book Appointment | HealthBridge" }] }),
   // loader: ({ context }) =>
   //   context.queryClient.ensureQueryData(doctorsQueryOptions()),
 });
@@ -21,7 +22,9 @@ export const Route = createFileRoute("/(dashboard)/appointment/$docId")({
 const daysOfWeeks = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
 function Appointment() {
+  useDocumentTitle("Book Appointment | HealthBridge");
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { docId } = Route.useParams();
   const { data: doctors, isLoading } = useDoctors();
   const docInfo = useMemo(
@@ -45,6 +48,8 @@ function Appointment() {
       });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["doctors"] });
       navigate({ to: "/my-appointments" });
       toast.success("Appointment booked successfully");
     },

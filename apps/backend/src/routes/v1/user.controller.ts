@@ -243,30 +243,9 @@ export function createUserController(input: {
       throw error;
     }
 
-    // Best-effort: create the Meet event on the doctor's calendar. A failure
-    // never blocks the booking — the appointment stands without a link.
-    let saved = appointment;
-    try {
-      const googleAuth = await doctors.getGoogleAuth(docId);
-      if (googleAuth?.googleTokens?.access_token) {
-        const { meetLink, googleEventId } = await createMeetEvent({
-          tokens: googleAuth.googleTokens,
-          appointmentId: appointment.id,
-          doctorName: doctor.name,
-          slotDate,
-          slotTime,
-        });
-        saved =
-          (await appointments.update(appointment.id, {
-            meetLink,
-            googleEventId,
-          })) ?? saved;
-      }
-    } catch (error) {
-      console.error("Google Meet creation failed:", error);
-    }
-
-    res.status(201).json({ success: true, appointment: saved });
+    // The Meet link is generated on successful payment (see
+    // verifyRazorpayPayment) — unpaid appointments get no meeting link.
+    res.status(201).json({ success: true, appointment });
   }
 
   async function cancelAppointment(req: Request, res: Response) {
@@ -382,7 +361,38 @@ export function createUserController(input: {
       payment: true,
     });
     if (!updated) throw new EntityNotFoundError("Appointment not found");
-    res.json({ success: true, appointment: updated });
+
+    // Best-effort: create the Meet event on the doctor's calendar now that
+    // the appointment is paid. Skipped if a link already exists, and a
+    // failure never blocks the payment — the appointment stands paid
+    // without a link.
+    let saved = updated;
+    if (!saved.meetLink) {
+      try {
+        const [doctor, googleAuth] = await Promise.all([
+          doctors.findById(appointment.docId),
+          doctors.getGoogleAuth(appointment.docId),
+        ]);
+        if (doctor && googleAuth?.googleTokens?.access_token) {
+          const { meetLink, googleEventId } = await createMeetEvent({
+            tokens: googleAuth.googleTokens,
+            appointmentId: appointment.id,
+            doctorName: doctor.name,
+            slotDate: appointment.slotDate,
+            slotTime: appointment.slotTime,
+          });
+          saved =
+            (await appointments.update(appointment.id, {
+              meetLink,
+              googleEventId,
+            })) ?? saved;
+        }
+      } catch (error) {
+        console.error("Google Meet creation failed:", error);
+      }
+    }
+
+    res.json({ success: true, appointment: saved });
   }
 
   return {

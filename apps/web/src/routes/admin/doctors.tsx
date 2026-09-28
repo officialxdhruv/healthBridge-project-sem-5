@@ -6,12 +6,14 @@ import { toast } from "sonner";
 import { adminDoctorsQueryOptions } from "@/lib/admin";
 import { api } from "@/lib/api";
 
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
 export const Route = createFileRoute("/admin/doctors")({
   component: AdminDoctors,
-  head: () => ({ meta: [{ title: "Admin Doctors | HealthBridge" }] }),
 });
 
 function AdminDoctors() {
+  useDocumentTitle("Admin Doctors | HealthBridge");
   const queryClient = useQueryClient();
   const { data: doctors = [], isLoading } = useQuery(
     adminDoctorsQueryOptions(),

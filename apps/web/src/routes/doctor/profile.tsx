@@ -12,12 +12,14 @@ import { toast } from "sonner";
 import { api, backendBaseUrl } from "@/lib/api";
 import { useDoctorProfileQuery } from "@/lib/doctor";
 
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
 export const Route = createFileRoute("/doctor/profile")({
   component: DoctorProfile,
-  head: () => ({ meta: [{ title: "Doctor Profile | HealthBridge" }] }),
 });
 
 function DoctorProfile() {
+  useDocumentTitle("Doctor Profile | HealthBridge");
   const qc = useQueryClient();
   const [isEdit, setIsEdit] = useState(false);
   const [submitting, setSubmitting] = useState(false);

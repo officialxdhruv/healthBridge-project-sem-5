@@ -18,12 +18,14 @@ import { adminDashboardQueryOptions } from "@/lib/admin";
 import { api } from "@/lib/api";
 import { formatSlotDate } from "@/lib/dates";
 
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
 export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
-  head: () => ({ meta: [{ title: "Admin Dashboard | HealthBridge" }] }),
 });
 
 function AdminDashboard() {
+  useDocumentTitle("Admin Dashboard | HealthBridge");
   const queryClient = useQueryClient();
   const { data: dashData, isLoading } = useQuery(adminDashboardQueryOptions());
 

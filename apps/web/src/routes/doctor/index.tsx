@@ -18,12 +18,14 @@ import { api } from "@/lib/api";
 import { formatSlotDate } from "@/lib/dates";
 import { doctorDashboardQueryOptions } from "@/lib/doctor";
 
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
 export const Route = createFileRoute("/doctor/")({
   component: DoctorDashboard,
-  head: () => ({ meta: [{ title: "Doctor Dashboard | HealthBridge" }] }),
 });
 
 function DoctorDashboard() {
+  useDocumentTitle("Doctor Dashboard | HealthBridge");
   const queryClient = useQueryClient();
   const { data: dashData, isLoading } = useQuery(doctorDashboardQueryOptions());
 

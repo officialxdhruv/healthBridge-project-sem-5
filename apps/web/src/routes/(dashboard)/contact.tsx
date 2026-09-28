@@ -2,12 +2,14 @@ import { Button } from "@healthbridge/ui/components/ui/button";
 import { createFileRoute } from "@tanstack/react-router";
 import { assets } from "../../assets/assets_frontend/assets.ts";
 
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
 export const Route = createFileRoute("/(dashboard)/contact")({
   component: ContactPage,
-  head: () => ({ meta: [{ title: "Contact Us | HealthBridge" }] }),
 });
 
 function ContactPage() {
+  useDocumentTitle("Contact Us | HealthBridge");
   return (
     <div className="py-8">
       <div className="text-center text-2xl">

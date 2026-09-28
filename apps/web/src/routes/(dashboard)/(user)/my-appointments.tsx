@@ -17,15 +17,17 @@ import { formatSlotDate } from "../../../lib/dates.ts";
 import { loadRazorpay } from "../../../lib/razorpay.ts";
 import { myAppointmentsQueryOptions } from "../../../lib/user.ts";
 
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
 export const Route = createFileRoute("/(dashboard)/(user)/my-appointments")({
   // beforeLoad: requireUser,
   component: MyAppointments,
-  head: () => ({ meta: [{ title: "My Appointments | HealthBridge" }] }),
   // loader: ({ context }) =>
   //   context.queryClient.ensureQueryData(myAppointmentsQueryOptions()),
 });
 
 function MyAppointments() {
+  useDocumentTitle("My Appointments | HealthBridge");
   const queryClient = useQueryClient();
 
   const { data: appointments, isLoading } = useQuery(

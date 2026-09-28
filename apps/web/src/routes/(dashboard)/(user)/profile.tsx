@@ -28,10 +28,11 @@ import { toast } from "sonner";
 import { api } from "../../../lib/api.ts";
 import { profileQueryOptions } from "../../../lib/user.ts";
 
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
 export const Route = createFileRoute("/(dashboard)/(user)/profile")({
   // beforeLoad: requireUser,
   component: ProfilePage,
-  head: () => ({ meta: [{ title: "My Profile | HealthBridge" }] }),
   // loader: ({ context }) =>
   //   context.queryClient.ensureQueryData(profileQueryOptions()),
 });
@@ -58,6 +59,7 @@ function buildForm(user: User): ProfileForm {
 }
 
 function ProfilePage() {
+  useDocumentTitle("My Profile | HealthBridge");
   const queryClient = useQueryClient();
 
   const { data: userData, isLoading } = useQuery(profileQueryOptions());

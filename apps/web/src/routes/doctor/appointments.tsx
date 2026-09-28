@@ -19,12 +19,14 @@ import { api } from "@/lib/api";
 import { calculateAge, formatSlotDate } from "@/lib/dates";
 import { doctorAppointmentsQueryOptions } from "@/lib/doctor";
 
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
 export const Route = createFileRoute("/doctor/appointments")({
   component: DoctorAppointments,
-  head: () => ({ meta: [{ title: "Doctor Appointments | HealthBridge" }] }),
 });
 
 function DoctorAppointments() {
+  useDocumentTitle("Doctor Appointments | HealthBridge");
   const queryClient = useQueryClient();
   const { data: appointments = [], isLoading } = useQuery(
     doctorAppointmentsQueryOptions(),

@@ -6,6 +6,7 @@ dist
 out
 *.tgz
 .build
+.openchamber
 
 # code coverage
 coverage
